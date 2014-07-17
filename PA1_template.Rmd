@@ -15,9 +15,35 @@ if( class(activity$date) != 'Date'){
 ```
 
 ## What is mean total number of steps taken per day?
+We need to get the average steps taken for each day of the week. For this case we use tapply()
+function and we need to set na.rm=TRUE so we remove the missing values.
+```{r echo=TRUE}
+#we use simplify=FALSE so we get a list (with dims) that is easier to deal with than a 
+#single dim array
+Mean <- tapply(activity$steps, weekdays(activity$date, abbreviate=T), mean, na.rm=TRUE, simplify=FALSE)
 
+#make the list a data frame, that is easy to deal with
+means <- as.data.frame(Mean)
 
+#add a new column with the weekdays that we can later use in our manipulations
+means$Weekday <- rownames(means)
 
+#sort based on the weekdays, first set the levels
+means$Weekday <- factor(means$Weekday, 
+                        levels=c("Sun", "Mon","Tue", "Wed", 
+                                "Thu", "Fri","Sat"))
+sortweek <- means[order(means$Weekday, decreasing=FALSE),]
+```
+
+Then we are making the histogram
+```{r, echo=TRUE}
+#make the Mean variable all numeric
+sortweek$Mean <- as.numeric(sortweek$Mean)
+
+#plot
+with(sortweek, plot(Weekday, Mean), type="p", main="Daily Number of Steps (Average)",
+                    xlab="Week Days", ylab="Average Steps")
+```
 ## What is the average daily activity pattern?
 
 
@@ -27,3 +53,8 @@ if( class(activity$date) != 'Date'){
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+
+
+
