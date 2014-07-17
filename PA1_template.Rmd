@@ -2,8 +2,17 @@
 
 
 ## Loading and preprocessing the data
+We first read the data into a variable
+```{r, echo=TRUE}
+activity <- read.csv("activity.csv", header=TRUE, na.strings="NA")
+```
 
-
+After this we need to make sure the date variable is of class Date
+```{r, echo=TRUE}
+if( class(activity$date) != 'Date'){
+  activity$date <- as.Date(activity$date)  
+}
+```
 
 ## What is mean total number of steps taken per day?
 
