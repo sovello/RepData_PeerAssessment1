@@ -39,13 +39,24 @@ Then we are making the histogram
 ```{r, echo=TRUE}
 #make the Mean variable all numeric
 sortweek$Mean <- as.numeric(sortweek$Mean)
-
+sortweek$Weekday <- as.character(sortweek$Weekday)
 #plot
-with(sortweek, plot(Weekday, Mean), type="p", main="Daily Number of Steps (Average)",
-                    xlab="Week Days", ylab="Average Steps")
+hist( sortweek$Mean, main="Daily Number of Steps (Average)", xlab="Week Days")
 ```
-## What is the average daily activity pattern?
 
+To get the mean and median for total number of steps taken per day
+```{r, echo=TRUE}
+#calculate the mean and median and round off to two decimal places
+stepsmean <- round(mean(sortweek$Mean), digits=2)
+stepsmedian <- round(median(sortweek$Mean), digits=2)
+```
+
+The mean for this distribution is `stepsmean` and the median is `stepsmedian`
+
+## What is the average daily activity pattern?
+```{r, echo=TRUE}
+names(activity)
+```
 
 
 ## Imputing missing values
