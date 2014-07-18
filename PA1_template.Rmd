@@ -55,7 +55,15 @@ The mean for this distribution is `stepsmean` and the median is `stepsmedian`
 
 ## What is the average daily activity pattern?
 ```{r, echo=TRUE}
-names(activity)
+library(lattice)
+
+activity$date <- as.factor(weekdays(activity$date))
+activity <- activity[order(activity$date, decreasing=T),]
+
+#plot
+#make weekdays a factor so they can be set as labels for the y-axis
+xyplot(steps ~ interval | date, data = activity, 
+       type="l", xlab="Interval (5-Minute)", ylab="Average Steps", layout=c(3,3))
 ```
 
 
