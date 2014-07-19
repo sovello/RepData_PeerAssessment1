@@ -5,71 +5,67 @@
 We first read the data into a variable
 ```{r, echo=TRUE}
 activity <- read.csv("activity.csv", header=TRUE, na.strings="NA")
-```
 
-After this we need to make sure the date variable is of class Date
-```{r, echo=TRUE}
 if( class(activity$date) != 'Date'){
-  activity$date <- as.Date(activity$date)  
+  activity$date <- as.Date(activity$date)
 }
+#maintain the original data set
+originalActivity <- activity
+##transform the activity so that all NAs become 0s
+activity[is.na(activity)] <- 0
+
+#get the total steps for each day
+dailySteps <- aggregate(activity$steps~activity$date, activity, sum)
+
+#set the column names for our data
+colnames(dailySteps) <- c("Date", "Total.Steps")
 ```
 
 ## What is mean total number of steps taken per day?
-We need to get the average steps taken for each day of the week. For this case we use tapply()
-function and we need to set na.rm=TRUE so we remove the missing values.
-```{r echo=TRUE}
-#we use simplify=FALSE so we get a list (with dims) that is easier to deal with than a 
-#single dim array
-Mean <- tapply(activity$steps, weekdays(activity$date, abbreviate=T), mean, na.rm=TRUE, simplify=FALSE)
-
-#make the list a data frame, that is easy to deal with
-means <- as.data.frame(Mean)
-
-#add a new column with the weekdays that we can later use in our manipulations
-means$Weekday <- rownames(means)
-
-#sort based on the weekdays, first set the levels
-means$Weekday <- factor(means$Weekday, 
-                        levels=c("Sun", "Mon","Tue", "Wed", 
-                                "Thu", "Fri","Sat"))
-sortweek <- means[order(means$Weekday, decreasing=FALSE),]
-```
-
-Then we are making the histogram
+The histogram for total number of steps taken each day
 ```{r, echo=TRUE}
-#make the Mean variable all numeric
-sortweek$Mean <- as.numeric(sortweek$Mean)
-sortweek$Weekday <- as.character(sortweek$Weekday)
+## Histogram
+library(ggplot2)
 #plot
-hist( sortweek$Mean, main="Daily Number of Steps (Average)", xlab="Week Days")
+qplot(Total.Steps, data=dailySteps, 
+      ylab="Step Counts", xlab="Total Steps", binwidth=800)
+
+#Mean per day
+dailyMeanSteps <- round(mean(dailySteps$Total.Steps), digits=0)
+
+#Median
+dailyMedian <- round(median(dailySteps$Total.Steps), digits=0)
 ```
 
-To get the mean and median for total number of steps taken per day
-```{r, echo=TRUE}
-#calculate the mean and median and round off to two decimal places
-stepsmean <- round(mean(sortweek$Mean), digits=2)
-stepsmedian <- round(median(sortweek$Mean), digits=2)
-```
-
-The mean for this distribution is `stepsmean` and the median is `stepsmedian`
+The mean number of steps per day is `r dailyMeanSteps` and the median is `r dailyMedian`.
 
 ## What is the average daily activity pattern?
 ```{r, echo=TRUE}
-library(lattice)
+##aggregate steps per interval
+averageIntervalSteps <- aggregate(activity$steps~activity$interval, activity, mean)
+colnames(averageIntervalSteps) <- c("Interval", "AverageSteps")
+##plot
+qplot(Interval, AverageSteps, data = averageIntervalSteps, 
+      xlab = "Interval", ylab="Average Steps", geom="line")
 
-activity$date <- as.factor(weekdays(activity$date))
-activity <- activity[order(activity$date, decreasing=T),]
-
-#plot
-#make weekdays a factor so they can be set as labels for the y-axis
-xyplot(steps ~ interval | date, data = activity, 
-       type="l", xlab="Interval (5-Minute)", ylab="Average Steps", layout=c(3,3))
+##return interval with maximum steps
+intervalWithMaxSteps <- averageIntervalSteps[which.max(averageIntervalSteps$Average),1]
 ```
 
+The `r intervalWithMaxSteps` interval is one with maximum average number of steps across all days
 
 ## Imputing missing values
+```{r, echo=TRUE}
+#we are going to use the non transformed dataset
+# missing values in rows
+completeRows <- complete.cases(originalActivity)
+naRows <- sum(!completeRows)
 
+#fill all rows with mean for the day
+dailyMeanSteps <- aggregate(activity$steps~activity$date, activity, mean)
 
+```
+There are `r naRows` with missing values.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
