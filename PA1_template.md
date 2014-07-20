@@ -114,8 +114,8 @@ The mean changed because now the sum of mean has gone up and the number of obser
 this is the reason why the mean has increased.
 
 ## Are there differences in activity patterns between weekdays and weekends?
-From the plots there appears to be some small differences, for example in the weekend days, the number of steps taken is rather
-uniform for all the intervals, and this number has a lot of surges during weekdays.
+From the plots there appears to be some small differences, for example in the weekend days, the number 
+of steps taken is rather uniform for all the intervals, and this number has a lot of surges during weekdays.
 
 ```r
 library(lattice)
@@ -126,7 +126,8 @@ originalActivity$date <- as.factor(weekdays(originalActivity$date))
 originalActivity$date <- ifelse(originalActivity$date %in% c("Saturday", "Sunday"), "weekend","weekday")
 
 #calculate the mean step for each interval for a day
-avgIntSteps <- aggregate(originalActivity$steps~originalActivity$date+originalActivity$interval, originalActivity, mean)
+avgIntSteps <- aggregate(originalActivity$steps~originalActivity$date+originalActivity$interval, 
+                         originalActivity, mean)
 
 #format column names
 colnames(avgIntSteps) = c("date", "interval","avgSteps")
