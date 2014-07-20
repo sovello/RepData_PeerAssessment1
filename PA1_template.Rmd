@@ -1,6 +1,4 @@
 # Reproducible Research: Peer Assessment 1
-
-
 ## Loading and preprocessing the data
 We first read the data into a variable
 ```{r, echo=TRUE}
@@ -28,7 +26,7 @@ The histogram for total number of steps taken each day
 library(ggplot2)
 #plot
 qplot(Total.Steps, data=dailySteps, 
-      ylab="Step Counts", xlab="Total Steps", binwidth=800)
+      ylab="Step Counts", xlab="Total Steps", binwidth=250)
 
 #Mean per day
 dailyMeanSteps <- round(mean(dailySteps$Total.Steps), digits=0)
@@ -60,16 +58,53 @@ The `r intervalWithMaxSteps` interval is one with maximum average number of step
 # missing values in rows
 completeRows <- complete.cases(originalActivity)
 naRows <- sum(!completeRows)
-
-#fill all rows with mean for the day
-dailyMeanSteps <- aggregate(activity$steps~activity$date, activity, mean)
-
 ```
-There are `r naRows` with missing values.
+
+There are `r naRows` rows with missing data in the original dataset.
+
+### Strategy for imputting missing values
+The missing values can be filled in using the average number of steps taken at each interval
+
+### Strategy implementation
+```{r, echo=TRUE}
+
+# daily mean steps for the two months
+#calculate the daily mean
+dailyMeanSteps <- aggregate(activity$steps~activity$date, activity, mean)
+colnames(dailyMeanSteps) <- c("Date", "MeanSteps")
+overAllMean <- mean(dailyMeanSteps$MeanSteps)
+
+#replacing all missing values
+originalActivity[is.na(originalActivity)] <- overAllMean
+#ploting the number of steps per day
+
+#now calculate the sum total of steps for each dat in the two months
+totalSteps <- aggregate(originalActivity$steps~originalActivity$date, originalActivity, sum)
+colnames(totalSteps) <- c("dates","step")
+##plot
+qplot(totalSteps$step, data = totalSteps, 
+      xlab = "Steps", ylab="Counts", binwidth=200)
+
+dailyMean <- round(mean(totalSteps[,2]), digits=0)
+#median
+dailyMedian <- round(median(totalSteps[,2]), digits=0)
+```
+
+After filling in the missing values the mean is `r dailyMean` and the median is `r dailyMedian`.
+The values especially the mean differs from the first estimate.
+The mean changed because now the sum of mean has gone up and the number of observations has remained the same, 
+this is the reason why the mean has increased.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+From the plots there appears to be some small differences, for example in the weekend days, the number of steps taken is rather
+uniform for all the intervals, and this number has a lot of surges during weekdays.
+```{r, echo=TRUE}
+library(lattice)
+originalActivity$date <- as.factor(weekdays(originalActivity$date))
+originalActivity$date <- ifelse(originalActivity$date %in% c("Saturday", "Sunday"), "weekend","weekday")
+avgIntSteps <- aggregate(originalActivity$steps~originalActivity$date+originalActivity$interval, originalActivity, mean)
+colnames(avgIntSteps) = c("date", "interval","avgSteps")
 
-
-
-
-
+xyplot(avgSteps ~ interval | date, data = avgIntSteps, 
+       type="l", xlab="Interval (5-Minute)", ylab="Average Steps", layout=c(1,2))
+```
